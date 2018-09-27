@@ -13,7 +13,9 @@ components:
     ports:
       "80":
         protocol: HTTP
-    
+        external_access:
+          public: true
+
     build:
       type: command_build
     

@@ -11,7 +11,7 @@ components:
     description: API for file type conversions
     
     ports:
-      "9000":
+      "80":
         protocol: HTTP
     
     build:
@@ -27,8 +27,6 @@ components:
       command:
       - python
       - back-end/server.py
-      environment:
-        PORT: "9000"
 
     node_pool: /:main 
     num_instances: 2

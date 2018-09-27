@@ -11,7 +11,7 @@ components:
     description: API for file type conversions
     
     ports:
-      "80":
+      "9000":
         protocol: HTTP
         external_access:
           public: true

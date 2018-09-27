@@ -27,6 +27,8 @@ components:
       command:
       - python
       - back-end/server.py
-    
+      environment:
+        PORT: "9000"
+
     node_pool: /:main 
     num_instances: 2

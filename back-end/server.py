@@ -1,36 +1,41 @@
+import logging
 import os
 from flask import Flask, request, redirect, send_from_directory
 from werkzeug.utils import secure_filename
 
 import convert
 
-UPLOAD_FOLDER = 'uploads'
-ALLOWED_EXTENSIONS = set(['pdf', 'png', 'jpg', 'jpeg', 'jpg_large'])
+log = logging.getLogger("main")
+logging.basicConfig(level=os.environ.get("LOGLEVEL", "DEBUG"))
 
-CONVERT = {
+app = Flask(__name__)
+app.config['MAX_CONTENT_LENGTH'] = 16 * 1024 * 1024
+app.config['ALLOWED_EXTENSIONS'] = set(
+    ['pdf', 'png', 'jpg', 'jpeg', 'jpg_large'])
+app.config['SUPPORTED_CONVERSIONS'] = {
+    'jpg': ['jpg', 'pdf', 'png'],
+    'pdf': ['pdf'],
+    'png': ['jpg', 'pdf', 'png']
+}
+app.config['CONVERT'] = {
     'jpg': convert.to_jpg,
     'pdf': convert.to_pdf,
     'png': convert.to_png
 }
 
-SUPPORTED_CONVERSIONS = {
-    'jpg': ['jpg', 'pdf', 'png'],
-    'pdf': ['pdf'],
-    'png': ['jpg', 'pdf', 'png']
-}
-
-app = Flask(__name__)
-app.config['MAX_CONTENT_LENGTH'] = 16 * 1024 * 1024
-app.config['UPLOAD_FOLDER'] = UPLOAD_FOLDER
+app.config['UPLOAD_FOLDER'] = 'uploads'
+app.config['UPLOAD_FOLDER_PATH'] = os.path.join(
+    app.root_path, app.config['UPLOAD_FOLDER'])
 
 
 def get_extension(filename):
     _, e = os.path.splitext(filename)
-    return e
+    return e.lower()[1:]
 
 
 def check_extension(filename):
-    return get_extension(filename).lower()[1:] in ALLOWED_EXTENSIONS
+    ext = get_extension(filename)
+    return ext in app.config['ALLOWED_EXTENSIONS']
 
 
 def allowed_file(filename):
@@ -39,7 +44,7 @@ def allowed_file(filename):
 
 def check_supported_conversion(output, file):
     input = get_extension(file)
-    if output not in SUPPORTED_CONVERSIONS[input]:
+    if output not in app.config['SUPPORTED_CONVERSIONS'][input]:
         raise ValueError("Conversion not supported")
 
 
@@ -47,7 +52,7 @@ def upload(file):
     if not allowed_file(file.filename):
         raise ValueError("File not supported")
     filename = secure_filename(file.filename)
-    filepath = os.path.join(app.config['UPLOAD_FOLDER'], filename)
+    filepath = os.path.join(app.config['UPLOAD_FOLDER_PATH'], filename)
     file.save(filepath)
     return filepath
 
@@ -66,13 +71,16 @@ def upload_file():
             input_filepath = upload(file)
             requested_conversion = request.form.get('output')
             check_supported_conversion(requested_conversion, input_filepath)
-            output_file = CONVERT[requested_conversion](input_filepath)
+            converter = app.config['CONVERT'][requested_conversion]
+            output_file = converter(input_filepath)
         except ValueError as e:
+            log.error(e)
             return str(e), 400
         except Exception as e:
+            log.error(e)
             return str(e), 500
 
-        return redirect(output_file)
+        return redirect(os.path.join(app.config['UPLOAD_FOLDER'], output_file))
     return '''
     <!doctype html>
     <title>Upload new File</title>
@@ -91,9 +99,9 @@ def upload_file():
 
 @app.route('/uploads/<filename>')
 def uploaded_file(filename):
-    return send_from_directory(app.config['UPLOAD_FOLDER'],
+    return send_from_directory(app.config['UPLOAD_FOLDER_PATH'],
                                filename)
 
 
 if __name__ == "__main__":
-    app.run(host="0.0.0.0", port=80)
+    app.run(host="0.0.0.0", port=9000, debug=True)

@@ -6,7 +6,7 @@ from werkzeug.utils import secure_filename
 import convert
 
 log = logging.getLogger("main")
-logging.basicConfig(level=os.environ.get("LOGLEVEL", "DEBUG"))
+logging.basicConfig(level=os.environ.get("LOGLEVEL", "INFO"))
 
 app = Flask(__name__)
 app.config['MAX_CONTENT_LENGTH'] = 16 * 1024 * 1024
@@ -53,6 +53,7 @@ def upload(file):
         raise ValueError("File not supported")
     filename = secure_filename(file.filename)
     filepath = os.path.join(app.config['UPLOAD_FOLDER_PATH'], filename)
+    log.info("Saving to {}".format(filepath))
     file.save(filepath)
     return filepath
 
@@ -68,6 +69,7 @@ def upload_file():
             return 'No selected file', 204
 
         try:
+            log.info("About to upload {}".format(file))
             input_filepath = upload(file)
             requested_conversion = request.form.get('output')
             check_supported_conversion(requested_conversion, input_filepath)
@@ -79,7 +81,6 @@ def upload_file():
         except Exception as e:
             log.error(e)
             return str(e), 500
-
         return redirect(os.path.join(app.config['UPLOAD_FOLDER'], output_file))
     return '''
     <!doctype html>
@@ -104,4 +105,14 @@ def uploaded_file(filename):
 
 
 if __name__ == "__main__":
+    if not os.path.exists(app.config['UPLOAD_FOLDER_PATH']):
+        log.info("Creating {}".format(app.config['UPLOAD_FOLDER_PATH']))
+        os.makedirs(app.config['UPLOAD_FOLDER_PATH'])
+        log.info("{} {}".format(
+            "Created"
+            if os.path.exists(app.config['UPLOAD_FOLDER_PATH'])
+            else "Did not create",
+            app.config['UPLOAD_FOLDER_PATH'])
+        )
+
     app.run(host="0.0.0.0", port=9000, debug=True)

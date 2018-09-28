@@ -21,7 +21,7 @@ def to_jpg(input):
     if input == output:
         return output
 
-    log.debug("Converting {} to {}".format(
+    log.info("Converting {} to {}".format(
              get_filename(input), get_filename(output)))
 
     fill_color = '#000000'
@@ -43,7 +43,7 @@ def to_png(input):
     if input == output:
         return output
 
-    log.debug("Converting {} to {}".format(
+    log.info("Converting {} to {}".format(
              get_filename(input), get_filename(output)))
 
     image = Image.open(input)
@@ -56,17 +56,18 @@ def to_png(input):
 
 
 def to_pdf(input):
-    # library does not work with alpha channels
-    input = to_jpg(input)
+    # library does not work with alpha channels, convert to jpg first
+    to_jpg(input)
+    input = change_extension(input, ".jpg")
     output = change_extension(input, ".pdf")
     if input == output:
         return output
 
-    log.debug("Converting {} to {}".format(
+    log.info("Converting {} to {}".format(
              get_filename(input), get_filename(output)))
     try:
         with open(output, "wb") as f:
             f.write(img2pdf.convert(input))
     except Exception as e:
-        log.error("well played")
+        log.error(e)
     return get_filename(output)

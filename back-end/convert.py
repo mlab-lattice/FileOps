@@ -19,9 +19,9 @@ def get_filename(filepath):
 def to_jpg(input):
     output = change_extension(input, ".jpg")
     if input == output:
-        return output
+        return get_filename(output)
 
-    log.debug("Converting {} to {}".format(
+    log.info("Converting {} to {}".format(
              get_filename(input), get_filename(output)))
 
     fill_color = '#000000'
@@ -41,9 +41,9 @@ def to_jpg(input):
 def to_png(input):
     output = change_extension(input, ".png")
     if input == output:
-        return output
+        return get_filename(output)
 
-    log.debug("Converting {} to {}".format(
+    log.info("Converting {} to {}".format(
              get_filename(input), get_filename(output)))
 
     image = Image.open(input)
@@ -56,17 +56,19 @@ def to_png(input):
 
 
 def to_pdf(input):
-    # library does not work with alpha channels
-    input = to_jpg(input)
     output = change_extension(input, ".pdf")
     if input == output:
-        return output
+        return get_filename(output)
+    # library does not work with alpha channels, convert to jpg first
+    input = change_extension(input, ".jpg")
+    jpg_input = to_jpg(input)
+    log.info("Removed alpha channels for {}".format(jpg_input))
 
-    log.debug("Converting {} to {}".format(
+    log.info("Converting {} to {}".format(
              get_filename(input), get_filename(output)))
     try:
         with open(output, "wb") as f:
             f.write(img2pdf.convert(input))
     except Exception as e:
-        log.error("well played")
+        log.error(e)
     return get_filename(output)

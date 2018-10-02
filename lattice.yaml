@@ -2,14 +2,14 @@ type: v1/system
 
 node_pools:
   main:
-    instance_type: t2.large
+    instance_type: t2.small
     num_instances: 2
 
 components:
   api:
     type: v1/service
     description: API for file type conversions
-    
+
     ports:
       "9000":
         protocol: HTTP
@@ -18,17 +18,15 @@ components:
 
     build:
       type: command_build
-    
+
       base_image:
         repository: npentrel/fileops-basic
         tag: latest
-      command:
-      - pwd
-    
+
     exec:
       command:
       - python
       - back-end/server.py
 
-    node_pool: /:main 
+    node_pool: /:main
     num_instances: 2

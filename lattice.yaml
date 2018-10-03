@@ -20,15 +20,14 @@ components:
       type: command_build
 
       base_image:
-        repository: npentrel/fileops-basic
+        repository: library/python
         tag: latest
       command:
-      - pwd
+      - pip install --no-cache-dir -r back-end/requirements.txt
 
     exec:
       command:
-      - python
-      - back-end/server.py
+      - python back-end/server.py
 
     node_pool: /:main
     num_instances: 2

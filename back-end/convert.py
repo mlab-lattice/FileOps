@@ -8,67 +8,75 @@ log = logging.getLogger("convert")
 
 
 def change_extension(filename, extension):
-    file, _ = os.path.splitext(filename)
-    return file + extension
+    basename, _ = os.path.splitext(filename)
+    return basename + extension
 
 
 def get_filename(filepath):
     return os.path.basename(filepath)
 
 
-def to_jpg(input):
-    output = change_extension(input, ".jpg")
-    if input == output:
-        return get_filename(output)
+def to_jpg(inputfile):
+    outputfile = change_extension(inputfile, ".jpg")
+    if inputfile == outputfile:
+        return get_filename(outputfile)
 
     log.info("Converting {} to {}".format(
-             get_filename(input), get_filename(output)))
+        get_filename(inputfile), get_filename(outputfile))
+    )
 
     fill_color = '#000000'
-    image = Image.open(input)
+    image = Image.open(inputfile)
     if image.mode in ('RGBA', 'LA'):
         background = Image.new(image.mode[:-1], image.size, fill_color)
         background.paste(image, image.split()[-1])
         image = background
     try:
-        image.save(output)
-        return get_filename(output)
+        image.save(outputfile)
+        return get_filename(outputfile)
     except IOError as e:
         log.error("cannot convert {}, error: {}".format(
-            get_filename(input), e))
+            get_filename(inputfile), e)
+        )
+        raise e
 
 
-def to_png(input):
-    output = change_extension(input, ".png")
-    if input == output:
-        return get_filename(output)
+def to_png(inputfile):
+    outputfile = change_extension(inputfile, ".png")
+    if inputfile == outputfile:
+        return get_filename(outputfile)
 
     log.info("Converting {} to {}".format(
-             get_filename(input), get_filename(output)))
+        get_filename(inputfile), get_filename(outputfile))
+    )
 
-    image = Image.open(input)
+    image = Image.open(inputfile)
     try:
-        image.save(output)
-        return get_filename(output)
+        image.save(outputfile)
+        return get_filename(outputfile)
     except IOError as e:
         log.error("cannot convert {}, error: {}".format(
-            get_filename(input), e))
+            get_filename(inputfile), e)
+        )
+        raise e
 
 
-def to_pdf(input):
-    output = change_extension(input, ".pdf")
-    if input == output:
-        return get_filename(output)
+def to_pdf(inputfile):
+    outputfile = change_extension(inputfile, ".pdf")
+    if inputfile == outputfile:
+        return get_filename(outputfile)
     # library does not work with alpha channels, convert to jpg first
-    input = change_extension(input, ".jpg")
-    jpg_input = to_jpg(input)
+    inputfile = change_extension(inputfile, ".jpg")
+    jpg_input = to_jpg(inputfile)
     log.info("Removed alpha channels for {}".format(jpg_input))
 
     log.info("Converting {} to {}".format(
-             get_filename(input), get_filename(output)))
+        get_filename(inputfile), get_filename(outputfile))
+    )
     try:
-        with open(output, "wb") as f:
-            f.write(img2pdf.convert(input))
+        with open(outputfile, "wb") as f:
+            f.write(img2pdf.convert(inputfile))
     except Exception as e:
         log.error(e)
-    return get_filename(output)
+        raise e
+    return get_filename(outputfile)

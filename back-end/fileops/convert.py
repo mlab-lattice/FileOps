@@ -31,14 +31,8 @@ def to_jpg(inputfile):
         background = Image.new(image.mode[:-1], image.size, fill_color)
         background.paste(image, image.split()[-1])
         image = background
-    try:
-        image.save(outputfile)
-        return get_filename(outputfile)
-    except IOError as e:
-        log.error("cannot convert {}, error: {}".format(
-            get_filename(inputfile), e)
-        )
-        raise e
+    image.save(outputfile)
+    return get_filename(outputfile)
 
 
 def to_png(inputfile):
@@ -51,14 +45,8 @@ def to_png(inputfile):
     )
 
     image = Image.open(inputfile)
-    try:
-        image.save(outputfile)
-        return get_filename(outputfile)
-    except IOError as e:
-        log.error("cannot convert {}, error: {}".format(
-            get_filename(inputfile), e)
-        )
-        raise e
+    image.save(outputfile)
+    return get_filename(outputfile)
 
 
 def to_pdf(inputfile):
@@ -66,17 +54,14 @@ def to_pdf(inputfile):
     if inputfile == outputfile:
         return get_filename(outputfile)
     # library does not work with alpha channels, convert to jpg first
-    inputfile = change_extension(inputfile, ".jpg")
     jpg_input = to_jpg(inputfile)
+    inputfile = change_extension(inputfile, ".jpg")
+
     log.info("Removed alpha channels for {}".format(jpg_input))
 
     log.info("Converting {} to {}".format(
         get_filename(inputfile), get_filename(outputfile))
     )
-    try:
-        with open(outputfile, "wb") as f:
-            f.write(img2pdf.convert(inputfile))
-    except Exception as e:
-        log.error(e)
-        raise e
+    with open(outputfile, "wb") as f:
+        f.write(img2pdf.convert(inputfile))
     return get_filename(outputfile)

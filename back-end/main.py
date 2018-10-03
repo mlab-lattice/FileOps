@@ -3,7 +3,7 @@ import os
 from flask import Flask, request, redirect, send_from_directory
 from werkzeug.utils import secure_filename
 
-import convert
+from fileops import convert
 
 log = logging.getLogger("main")
 logging.basicConfig(level=os.environ.get("LOGLEVEL", "INFO"))
@@ -78,10 +78,14 @@ def upload_file():
             converter = app.config['CONVERT'][requested_conversion]
             outputfile = converter(inputfilepath)
         except ValueError as e:
-            log.error(e)
+            log.error("cannot convert {}, error: {}".format(
+                inputfile.filename, e)
+            )
             return str(e), 400
         except Exception as e:
-            log.error(e)
+            log.error("cannot convert {}, error: {}".format(
+                inputfile.filename, e)
+            )
             return str(e), 500
         return redirect(os.path.join(app.config['UPLOAD_FOLDER'], outputfile))
     return '''

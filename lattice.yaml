@@ -20,7 +20,7 @@ components:
       type: command_build
 
       base_image:
-        repository: npentrel/fileops-basic
+        repository: library/python
         tag: latest
       command:
       - pwd

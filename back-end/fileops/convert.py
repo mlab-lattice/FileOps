@@ -21,13 +21,15 @@ def to_jpg(inputfile):
     if inputfile == outputfile:
         return get_filename(outputfile)
 
-    log.info("Converting {} to {}".format(
-        get_filename(inputfile), get_filename(outputfile))
+    log.info(
+        "Converting {} to {}".format(
+            get_filename(inputfile), get_filename(outputfile)
+        )
     )
 
-    fill_color = '#000000'
+    fill_color = "#000000"
     image = Image.open(inputfile)
-    if image.mode in ('RGBA', 'LA'):
+    if image.mode in ("RGBA", "LA"):
         background = Image.new(image.mode[:-1], image.size, fill_color)
         background.paste(image, image.split()[-1])
         image = background
@@ -40,8 +42,10 @@ def to_png(inputfile):
     if inputfile == outputfile:
         return get_filename(outputfile)
 
-    log.info("Converting {} to {}".format(
-        get_filename(inputfile), get_filename(outputfile))
+    log.info(
+        "Converting {} to {}".format(
+            get_filename(inputfile), get_filename(outputfile)
+        )
     )
 
     image = Image.open(inputfile)
@@ -59,8 +63,10 @@ def to_pdf(inputfile):
 
     log.info("Removed alpha channels for {}".format(jpg_input))
 
-    log.info("Converting {} to {}".format(
-        get_filename(inputfile), get_filename(outputfile))
+    log.info(
+        "Converting {} to {}".format(
+            get_filename(inputfile), get_filename(outputfile)
+        )
     )
     with open(outputfile, "wb") as f:
         f.write(img2pdf.convert(inputfile))

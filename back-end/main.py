@@ -1,5 +1,6 @@
 import logging
 import os
+import traceback
 from flask import Flask, request, redirect, send_from_directory
 from werkzeug.utils import secure_filename
 
@@ -52,6 +53,11 @@ def check_supported_conversion(output, filename):
         raise ValueError("Conversion not supported")
 
 
+def log_error(e, inputfile):
+    log.error("cannot convert {}, error: {}".format(inputfile.filename, e))
+    log.error(traceback.format_exc())
+
+
 def upload(inputfile):
     if not allowed_file(inputfile.filename):
         raise ValueError("File not supported")
@@ -80,14 +86,10 @@ def upload_file():
             converter = app.config["CONVERT"][requested_conversion]
             outputfile = converter(inputfilepath)
         except ValueError as e:
-            log.error(
-                "cannot convert {}, error: {}".format(inputfile.filename, e)
-            )
+            log_error(e, inputfile)
             return str(e), 400
         except Exception as e:
-            log.error(
-                "cannot convert {}, error: {}".format(inputfile.filename, e)
-            )
+            log_error(e, inputfile)
             return str(e), 500
         return redirect(os.path.join(app.config["UPLOAD_FOLDER"], outputfile))
     return """
@@ -119,4 +121,4 @@ if __name__ == "__main__":
         status = "Created" if os.path.exists(path) else "Did not create"
         log.info("{} {}".format(status, path))
 
-    app.run(host="0.0.0.0", port=9000)
+    app.run(host="0.0.0.0", port=9000, debug=True)

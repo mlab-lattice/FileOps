@@ -94,8 +94,6 @@ def upload_file():
         return redirect(os.path.join(app.config["UPLOAD_FOLDER"], outputfile))
     return """
     <!doctype html>
-    <title>Upload new File</title>
-    <h1>Upload new File</h1>
     <form method="post" enctype="multipart/form-data">
         <input type="file" name="file">
         <select type="text" name="output">

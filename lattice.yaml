@@ -23,7 +23,7 @@ components:
         repository: library/python
         tag: latest
       command:
-      - pip install --no-cache-dir -r back-end/requirements.txt
+      - ls
 
     exec:
       command:
